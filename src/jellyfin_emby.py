@@ -12,6 +12,7 @@ from loguru import logger
 from src.functions import (
     search_mapping,
     log_marked,
+    parse_location,
     str_to_bool,
 )
 from src.watched import (
@@ -50,11 +51,11 @@ def extract_identifiers_from_item(
     locations: tuple[str, ...] = tuple()
     if generate_locations:
         if item.get("Path"):
-            locations = tuple([item["Path"].split("/")[-1]])
+            locations = tuple([parse_location("jellyfin_emby", item["Path"])])
         elif item.get("MediaSources"):
             locations = tuple(
                 [
-                    x["Path"].split("/")[-1]
+                    parse_location("jellyfin_emby", x["Path"])
                     for x in item["MediaSources"]
                     if x.get("Path")
                 ]
@@ -360,7 +361,7 @@ class JellyfinEmby:
                         k.lower(): v for k, v in show.get("ProviderIds", {}).items()
                     }
                     show_locations = (
-                        tuple([show["Path"].split("/")[-1]])
+                        tuple([parse_location("jellyfin_emby", show["Path"])])
                         if show.get("Path")
                         else tuple()
                     )

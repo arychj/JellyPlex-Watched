@@ -6,7 +6,16 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 mark_file = os.getenv("MARK_FILE", os.getenv("MARKFILE", "mark.log"))
+match_full_locations = os.getenv("MATCH_FULL_LOCATION", "False")
 
+cached_envs = {}
+
+def get_variable_env(pattern: str, default: str=None, **kwargs: dict[Any, Any]) -> str:
+    env_name = pattern.format(**kwargs).upper()
+    if not env_name in cached_envs:
+        cached_envs[env_name] = os.getenv(env_name, default)
+    
+    return cached_envs[env_name]
 
 def log_marked(
     server_type: str,
@@ -116,3 +125,18 @@ def parse_string_to_list(string: str | None) -> list[str]:
         output = string.split(",")
 
     return output
+
+def parse_location(type: str, location: str) -> str:
+    if not str_to_bool(match_full_locations):
+        location = location.split("/")[-1]
+    
+    strip_prefix = get_variable_env(
+        pattern="STRIP_{type}_LOCATION_PREFIX",
+        default=None,
+        type=type
+    )
+
+    if strip_prefix:
+        location = location.replace(strip_prefix, "")
+    
+    return location

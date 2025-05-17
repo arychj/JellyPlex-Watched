@@ -16,6 +16,7 @@ from plexapi.library import MovieSection, ShowSection
 from src.functions import (
     search_mapping,
     log_marked,
+    parse_location,
     str_to_bool,
 )
 from src.watched import (
@@ -68,7 +69,7 @@ def extract_identifiers_from_item(item: Movie | Show | Episode) -> MediaIdentifi
     return MediaIdentifiers(
         title=item.title,
         locations=(
-            tuple([location.split("/")[-1] for location in item.locations])
+            tuple([parse_location("plex", location) for location in item.locations])
             if generate_locations
             else tuple()
         ),
@@ -359,7 +360,7 @@ class Plex:
                                     locations=(
                                         tuple(
                                             [
-                                                location.split("/")[-1]
+                                                parse_location("plex", location)
                                                 for location in show.locations
                                             ]
                                         )
